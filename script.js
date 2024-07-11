@@ -4,6 +4,7 @@ const inputElement = document.getElementById('input');
 let webhookUrl = '';
 let username = '';
 let message = '';
+let avatarUrl = '';
 let mode = 'instructions';
 let spamInterval;
 let spamMessage = '';
@@ -45,8 +46,16 @@ inputElement.addEventListener('keydown', async (event) => {
             }
         } else if (mode === 'username') {
             username = input;
-            output('Username set. Please enter the message.');
-            mode = 'message';
+            output('Username set. Please enter the avatar URL.');
+            mode = 'avatar';
+        } else if (mode === 'avatar') {
+            if (input.startsWith('http')) {
+                avatarUrl = input;
+                output('Avatar URL set. Please enter the message.');
+                mode = 'message';
+            } else {
+                output('Invalid avatar URL. Please try again.');
+            }
         } else if (mode === 'message') {
             message = input;
             if (spamMessage) {
@@ -59,8 +68,9 @@ inputElement.addEventListener('keydown', async (event) => {
                 output('Spam started. Type "stop" to stop spamming.');
                 mode = 'spamControl';
             } else {
-                await sendMessage(webhookUrl, username, message);
+                await sendMessage(webhookUrl, username, message, avatarUrl);
                 output('Message sent. Please enter a new message or type "exit" to finish.');
+                mode = 'exit';
             }
         } else if (mode === 'spamControl') {
             if (input.toLowerCase() === 'stop') {
@@ -77,6 +87,7 @@ inputElement.addEventListener('keydown', async (event) => {
                 inputElement.disabled = true;
             } else {
                 output('Please type "exit" to finish or enter a new message.');
+                mode = 'message';
             }
         }
     }
@@ -89,11 +100,11 @@ function output(text) {
     outputElement.scrollTop = outputElement.scrollHeight;
 }
 
-async function sendMessage(webhookUrl, username, message) {
+async function sendMessage(webhookUrl, username, message, avatarUrl) {
     const payload = {
         content: message,
         username: username,
-        avatar_url: "https://raw.githubusercontent.com/Zandgar11/image/main/JordanLeCopainDaxxio.png"
+        avatar_url: avatarUrl
     };
 
     try {
@@ -115,6 +126,6 @@ async function sendMessage(webhookUrl, username, message) {
 
 function startSpam() {
     spamInterval = setInterval(async () => {
-        await sendMessage(webhookUrl, username, spamMessage);
+        await sendMessage(webhookUrl, username, spamMessage, avatarUrl);
     }, 1000); // Change interval time as needed
 }
