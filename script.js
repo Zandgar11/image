@@ -4,9 +4,20 @@ const inputElement = document.getElementById('input');
 let webhookUrl = '';
 let username = '';
 let message = '';
-let mode = 'select';
+let mode = 'instructions';
 let spamInterval;
 let spamMessage = '';
+
+const instructions = `
+Welcome to the Command Line Webhook Sender!
+Please follow the instructions below:
+1. Type "spam" to enter spam mode.
+2. Type "coup par coup" to enter coup par coup mode.
+`;
+
+document.addEventListener('DOMContentLoaded', () => {
+    output(instructions);
+});
 
 inputElement.addEventListener('keydown', async (event) => {
     if (event.key === 'Enter') {
@@ -14,9 +25,9 @@ inputElement.addEventListener('keydown', async (event) => {
         inputElement.value = '';
         output('>' + input);
         
-        if (mode === 'select') {
+        if (mode === 'instructions') {
             if (input.toLowerCase() === 'spam') {
-                mode = 'spam';
+                mode = 'webhook';
                 output('Spam mode selected. Please enter the webhook URL.');
             } else if (input.toLowerCase() === 'coup par coup') {
                 mode = 'webhook';
@@ -24,7 +35,7 @@ inputElement.addEventListener('keydown', async (event) => {
             } else {
                 output('Invalid mode. Please type "spam" or "coup par coup".');
             }
-        } else if (mode === 'webhook' || mode === 'spam') {
+        } else if (mode === 'webhook') {
             if (input.startsWith('https://discord.com/api/webhooks/')) {
                 webhookUrl = input;
                 output('Webhook URL set. Please enter the username.');
@@ -46,18 +57,12 @@ inputElement.addEventListener('keydown', async (event) => {
                 spamMessage = message;
                 startSpam();
                 output('Spam started. Type "stop" to stop spamming.');
+                mode = 'spamControl';
             } else {
                 await sendMessage(webhookUrl, username, message);
                 output('Message sent. Please enter a new message or type "exit" to finish.');
             }
-        } else if (mode === 'exit') {
-            if (input.toLowerCase() === 'exit') {
-                output('Goodbye!');
-                inputElement.disabled = true;
-            } else {
-                output('Please type "exit" to finish or enter a new message.');
-            }
-        } else if (mode === 'spam') {
+        } else if (mode === 'spamControl') {
             if (input.toLowerCase() === 'stop') {
                 clearInterval(spamInterval);
                 spamMessage = '';
@@ -65,6 +70,13 @@ inputElement.addEventListener('keydown', async (event) => {
                 mode = 'message';
             } else {
                 output('Invalid command. Type "stop" to stop spamming.');
+            }
+        } else if (mode === 'exit') {
+            if (input.toLowerCase() === 'exit') {
+                output('Goodbye!');
+                inputElement.disabled = true;
+            } else {
+                output('Please type "exit" to finish or enter a new message.');
             }
         }
     }
