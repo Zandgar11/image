@@ -1,0 +1,43 @@
+body {
+    background-color: black;
+    color: lime;
+    font-family: monospace;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.terminal {
+    width: 80%;
+    height: 80%;
+    border: 1px solid lime;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.output {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.input-line {
+    display: flex;
+}
+
+#prompt {
+    padding-right: 10px;
+}
+
+#input {
+    flex-grow: 1;
+    background: black;
+    color: lime;
+    border: none;
+    outline: none;
+    font-family: monospace;
+    font-size: 1rem;
+}
