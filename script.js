@@ -3,14 +3,28 @@ const inputElement = document.getElementById('input');
 
 let webhookUrl = '';
 let username = '';
-let mode = 'webhook';
+let message = '';
+let mode = 'select';
+let spamInterval;
+let spamMessage = '';
 
 inputElement.addEventListener('keydown', async (event) => {
     if (event.key === 'Enter') {
         const input = inputElement.value.trim();
         inputElement.value = '';
+        output('>' + input);
         
-        if (mode === 'webhook') {
+        if (mode === 'select') {
+            if (input.toLowerCase() === 'spam') {
+                mode = 'spam';
+                output('Spam mode selected. Please enter the webhook URL.');
+            } else if (input.toLowerCase() === 'coup par coup') {
+                mode = 'webhook';
+                output('Coup par coup mode selected. Please enter the webhook URL.');
+            } else {
+                output('Invalid mode. Please type "spam" or "coup par coup".');
+            }
+        } else if (mode === 'webhook' || mode === 'spam') {
             if (input.startsWith('https://discord.com/api/webhooks/')) {
                 webhookUrl = input;
                 output('Webhook URL set. Please enter the username.');
@@ -23,16 +37,34 @@ inputElement.addEventListener('keydown', async (event) => {
             output('Username set. Please enter the message.');
             mode = 'message';
         } else if (mode === 'message') {
-            const message = input;
-            output(`Sending message: ${message}`);
-            await sendMessage(webhookUrl, username, message);
-            output('Message sent. Please enter a new message or type "exit" to finish.');
+            message = input;
+            if (spamMessage) {
+                clearInterval(spamInterval);
+                spamMessage = '';
+            }
+            if (mode === 'spam') {
+                spamMessage = message;
+                startSpam();
+                output('Spam started. Type "stop" to stop spamming.');
+            } else {
+                await sendMessage(webhookUrl, username, message);
+                output('Message sent. Please enter a new message or type "exit" to finish.');
+            }
         } else if (mode === 'exit') {
             if (input.toLowerCase() === 'exit') {
                 output('Goodbye!');
                 inputElement.disabled = true;
             } else {
                 output('Please type "exit" to finish or enter a new message.');
+            }
+        } else if (mode === 'spam') {
+            if (input.toLowerCase() === 'stop') {
+                clearInterval(spamInterval);
+                spamMessage = '';
+                output('Spam stopped. Please enter a new message or type "exit" to finish.');
+                mode = 'message';
+            } else {
+                output('Invalid command. Type "stop" to stop spamming.');
             }
         }
     }
@@ -67,4 +99,10 @@ async function sendMessage(webhookUrl, username, message) {
     } catch (error) {
         output(`Failed to send message: ${error.message}`);
     }
+}
+
+function startSpam() {
+    spamInterval = setInterval(async () => {
+        await sendMessage(webhookUrl, username, spamMessage);
+    }, 1000); // Change interval time as needed
 }
